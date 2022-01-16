@@ -91,7 +91,7 @@ check_url () {
 			echo -e "$domain ${YELLOW}can be vulnerable ❌${RESET}  (email will be sent to spam)"
 		;;
 		*)
-			echo -e "$domain is ${RED}vulnerable ❌${RESET} (No DMARC record found)"
+			echo -e "$domain is ${RED}vulnerable ❌${RESET} (No SPF record found)"
 			retval=1
 		;;
 	esac
