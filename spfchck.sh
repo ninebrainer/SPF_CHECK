@@ -1,58 +1,45 @@
 #!/usr/bin/env bash
 #-Metadata----------------------------------------------------#
-#  Filename: Mangekyo (v1.0.0)           (Update: 2022-02-06) #
+#  Filename: SPFCHCK (v1.0.0)            (Update: 2021-11-04) #
 #-Info--------------------------------------------------------#
-#  Subdomain Enumeration & Analysis.                          #
+#  SPF Checker Automation Dig                                 #
 #-Author(s)---------------------------------------------------#
 #  Blay Raes ~ @ninebrainer                                   #
 #-------------------------------------------------------------#
 
-main () {
 
-	while getopts d:m: flag
-	do
-		case "${flag}" in
-			f) mode=${OPTARG};;
-			d) DOMAIN=${OPTARG};;
-		esac
-	done
 
-	if [ -n "$DOMAIN" ]; then
-		goBanner
-		scan_domain 
-	
-	else
-		goBanner
-		echo -e "\n ${RED}[❌ERROR❌]${RESET} You need to specify the target domain.${RED}[❌ERROR❌]${RESET}"
-        	echo -e "\nUsage: \t$0 <DOMAIN>"
-        	echo -e "Example: ./mangekyo.sh -d example.com -m [large/medium/small] -x [OOS domains] ${LGREEN} \u2714 ${RESET}"
-        	exit 1
-	fi
-
-}
 
 
 ### Variable Name and Version
 
-APPNAME="mangekyo.sh"
+APPNAME="SPFCHCK"
 VERSION="1.0.0#dev"
 
 
 
 
+
 goBanner(){
-echo -e ${SPURPLE}"               ${LPURPLE}            ${LPURPLE}                       ${RED}*${BLACK}@${RED}, ";
-echo -e ${SPURPLE}" _____ ___ ___ ${LPURPLE}___ ___| |_${LPURPLE}_ _ ___            ${RED}@&%%%${BLACK}@@${RED}%%%&&@";
-echo -e ${SPURPLE}"|     | .'|   |${LPURPLE} . | -_| '_${LPURPLE}| | | . |        ${RED}@&%%%%${BLACK}@@@${RED}%%%%%%&@";
-echo -e ${SPURPLE}"|_|_|_|__,|_|_|${LPURPLE}_  |___|_,_${LPURPLE}|_  |___|       ${RED}&%%%%%%${BLACK}@@@@${RED}&%%%%%%@";
-echo -e ${SPURPLE}"              ${LPURPLE}|___|       ${LPURPLE}|___|          ${RED}@&%%%%%&${BLACK}@${RED}&&&${BLACK}@@@@${RED}%%%&";
-echo -e ${SPURPLE}"  ______________________________          ${RED}&%%%%${BLACK}@@@@@@&%@@@@${RED}%@";
-echo -e ${SPURPLE}"           -+-+-+-+-+-                     ${RED}@${BLACK}&&&${RED}%%%%%%%%%%${BLACK}%@${RED}@";
-echo -e ${SPURPLE}"                                             ${RED}@&&%%%%%%%&&@";
-echo -e ${SPURPLE}"         ~${VERSION}~${RESET}  by ${DGRAY}@ninebrainer ${RESET}";
-echo -e "${RED}    Mangekyo ${RESET}- Subdmain Enumeration and Fuzzer ${RESET}";
-echo -e      "\t ~http://github.com/ninebrainer/mangekyo"
+echo -e "\n"
+echo -e ${SBLUE}"           / _|   | |        | |      ${SPURPLE}           :::::::  ";
+echo -e ${SBLUE}" ___ _ __ | |_ ___| |__   ___| | __   ${SPURPLE}          -%%%%%%%-  ";
+echo -e ${SBLUE}"/ __| '_ \|  _/ __| '_ \ / __| |/ /   ${SPURPLE}        ###%%%%%%%###.";
+echo -e ${SBLUE}"\__ \ |_) | || (__| | | | (__|   <    ${SPURPLE}       .%%*==%%%==*%%.";
+echo -e ${SBLUE}"|___/ .__/|_| \___|_| |_|\___|_|\_\   ${SPURPLE}       .%%*-=%%%=-*%%.";
+echo -e ${SBLUE}"    | |                                ${SPURPLE}      .##%%%%%%%%%##.";
+echo -e ${SBLUE}"    |_|                                ${SPURPLE}        =#-+*:**-#= ";
+echo -e ${SBLUE}"                                       ${SPURPLE}       =# -#   #- #=   ";
+echo -e ${SBLUE}"                                        ${SPURPLE}     =-=:*=   =*:=-=";
+echo -e ${RED}"spfchck ${RESET}* Simple Bash SPF record checker${RESET}${SPURPLE}     .:-.#-   -#.-:.     ";
+echo -e ${RESET}     " ~ https://github.com/ninebrainer/SPF_CHECK    ${SPURPLE}=-+. .+-=${RESET}"
+echo 
+echo 
 }
+
+
+# ✔
+# # ❌
 
 #### Colors Output
 
@@ -82,60 +69,78 @@ DGRAY="\033[1;30m"		# Dark Gray
 BLACK="\e[0;30m"		# BLACK 
 
 
+goBanner ## Called Banner DMARCHECK
 
+help () {
+	echo "Accepted parameters:"
+	echo "Use -d along with a domain name, example sh spfchck.sh -d domain.com"
+	echo "Null string will be detected and ignored"
+	echo "Use -f along with a file containing domain names, example sh spfchck.sh -f domains.txt"
+	echo "Note that the path provided for the file must be a valid one"
+}
 
+check_url () {
+	domain=$1
 
-#echo ${DOMAIN}
-#echo ${CHAOSDOMAIN}
-#echo ${DATE}
+	retval=0
+	output=$(dig "$domain" txt)
+	case "$output" in
+		*-all*)
+			echo -e "$domain is ${GREEN}NOT vulnerable ✔${RESET} "
+		;;
+		*~all*)
+			echo -e "$domain ${YELLOW}can be vulnerable ❌${RESET}  (email will be sent to spam)"
+		;;
+		*)
+			echo -e "$domain is ${RED}vulnerable ❌${RESET} (No SPF record found)"
+			retval=1
+		;;
+	esac
+	return $retval
+}
 
-scan_domain() { 
+check_file () {
 
-goBanner ## Called banner mangekyo
-echo -e "\n${BOLD}[${RED}!${RESET}${BOLD}]${RESET} This tool is for ${BOLD}educational${RESET} purpose only.   "
-echo -e "${BOLD} ${LGREEN} ${RESET}${BOLD} ${RESET} Usage of Mangekyo for ${BOLD}attacking${RESET} targets ${BOLD}without ${RESET}prior mutual consent is ${RED}illegal${RESET}   "
-echo -e "${BOLD} ${LGREEN} ${RESET}${BOLD} ${RESET} developers assume no liability and are not responsible for any misuse or damage cause by this program   "
-echo -e "\n${BOLD}[${LCYAN}-${RESET}${BOLD}]${RESET} Perfoming ${RED}${BOLD}RECON${RESET} scans  "
-
-
-# Timestamp
-start_date_time=$(date "+%Y-%m-%d %H:%M:%S")
-
-# Timestamp
-end_date_time=$(date "+%Y-%m-%d %H:%M:%S")
-
-# DATE for DIRECTORY
-DATE=$(date "+%d-%m-%Y")
-
-# Out of Scope Domain -x 
-
-#ℳ
-
-echo -e "\n${BOLD}[${LBLUE}*${RESET}${BOLD}]${RESET} Load target domain: ${LGREEN}${DOMAIN}${RESET}"
-echo -e "${BOLD}${PADDING}${PADDING}-${RESET}${BOLD}${RESET} ${LGREEN}Starting${RESET} scanning @ ${start_date_time} " 
-echo -e "\n${BOLD}[${LGREEN}+${RESET}${BOLD}]${RESET} Running & Checking source to be used  " 
-echo -e "Starting scan for ${DOMAIN} on ${start_date_time}" | notify -silent 
-echo -e "---------------------------------------------\n"
-
-echo "${start_time}" > /dev/null 2>&1
-
-if [ ! -d "~/target" ];then
-	mkdir ~/targets
-fi 
-if [ ! -d "~/targets/${DOMAIN}" ];then
-    mkdir ~/targets/${DOMAIN}
- fi
-if [ ! -d "~/targets/${DOMAIN}/${DATE}" ];then
-    mkdir ~/targets/${DOMAIN}/${DATE}
- fi
-if [ ! -d "~/targets/${DOMAIN}/${DATE}/subs" ];then
-     mkdir ~/targets/${DOMAIN}/${DATE}/subs
- fi
-
-cd ~/targets/${DOMAIN}/${DATE}/subs
+		input=$1
+		
+		COUNTER=0
+		VULNERABLES=0
+		while IFS= read -r line
+		do
+			COUNTER=$((COUNTER=COUNTER+1))
+			check_url $line
+			VULNERABLES=$((VULNERABLES=VULNERABLES+$?))
+		done < $input
+		echo -e "\n$VULNERABLES out of $COUNTER domains are ${RED}vulnerable ${RESET}"
 
 }
- 
 
+main () {
+
+	while getopts d:f: flag
+	do
+		case "${flag}" in
+			f) file=${OPTARG};;
+			d) domain=${OPTARG};;
+		esac
+	done
+
+	if [ -n "$domain" ]; then
+		check_url $domain
+	elif [ -f "$file" ]; then
+		check_file $file
+	else
+		help
+	fi
+
+}
+
+
+if [ $# != 2  ];then
+	echo " "
+        echo -e 	${RED}"❌" ${RESET} "Wrong execution"
+	help
+	exit 0
+fi
 
 main $@
